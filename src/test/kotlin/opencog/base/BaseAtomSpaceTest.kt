@@ -1,5 +1,6 @@
 package opencog.core
 
+import opencog.base.BaseAtomSpace
 import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
