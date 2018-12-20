@@ -14,23 +14,29 @@ fun reduceNumbers(op: (Double, Double) -> Double): (Atom, Atom) -> Atom {
 
 open class BaseAtomSpace : AtomSpace {
 
-    // Map<Type<Map<Name, Node>>
+    // Map<Type,<Map<Name, Node>>
     private val nodeMap = mutableMapOf<String, MutableMap<String, Node>>()
+
+    // Map<Type,Set<Link>>
+    private val linkMap = mutableMapOf<String, MutableSet<Link>>()
 
     override fun add(atom: Atom): AtomSpace {
         when (atom) {
             is Node -> addNode(atom)
-            is Link -> TODO()
+            is Link -> addLink(atom)
             else -> atom.unknownAtom()
         }
         return this
     }
 
-    protected fun addNode(node: Node) {
-        nodeMap
-                .getOrPut(node.type) { mutableMapOf() }
-                .putIfAbsent(node.name, node)
-    }
+    protected fun addNode(node: Node) = nodeMap
+            .getOrPut(node.type) { mutableMapOf() }
+            .putIfAbsent(node.name, node)
+
+    protected fun addLink(link: Link) = linkMap
+            .getOrPut(link.type) { mutableSetOf() }
+            .add(link)
+
 
     override fun add(factory: AtomSpace.() -> Atom): AtomSpace {
         add(this.factory())
@@ -39,7 +45,7 @@ open class BaseAtomSpace : AtomSpace {
 
     override fun contains(atom: Atom): Boolean = when (atom) {
         is Node -> nodeMap.get(atom.type)?.contains(atom.name) ?: false
-        is Link -> TODO()
+        is Link -> linkMap.get(atom.type)?.contains(atom) ?: false
         else -> atom.unknownAtom()
     }
 

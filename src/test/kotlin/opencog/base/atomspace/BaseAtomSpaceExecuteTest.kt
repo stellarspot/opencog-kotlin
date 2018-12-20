@@ -4,7 +4,7 @@ import opencog.base.BaseAtomSpace
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class FunctionsTest {
+class BaseAtomSpaceExecuteTest {
 
     @Test
     fun testSum() {
