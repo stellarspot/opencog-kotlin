@@ -38,12 +38,16 @@ class RainSprinklerWetGrassTest {
 
     val grassNode = Node(grass, rainNode, sprinklerNode) {
         when (it) {
+
             setOf(rain.withValue(False), sprinkler.withValue(False), grass.withValue(False)) -> 1.0
             setOf(rain.withValue(False), sprinkler.withValue(False), grass.withValue(True)) -> 0.0
-            setOf(rain.withValue(False), sprinkler.withValue(True), grass.withValue(False)) -> 0.2
-            setOf(rain.withValue(False), sprinkler.withValue(True), grass.withValue(True)) -> 0.8
-            setOf(rain.withValue(True), sprinkler.withValue(False), grass.withValue(False)) -> 0.1
-            setOf(rain.withValue(True), sprinkler.withValue(False), grass.withValue(True)) -> 0.9
+
+            setOf(rain.withValue(False), sprinkler.withValue(True), grass.withValue(False)) -> 0.1
+            setOf(rain.withValue(False), sprinkler.withValue(True), grass.withValue(True)) -> 0.9
+
+            setOf(rain.withValue(True), sprinkler.withValue(False), grass.withValue(False)) -> 0.2
+            setOf(rain.withValue(True), sprinkler.withValue(False), grass.withValue(True)) -> 0.8
+
             setOf(rain.withValue(True), sprinkler.withValue(True), grass.withValue(False)) -> 0.01
             setOf(rain.withValue(True), sprinkler.withValue(True), grass.withValue(True)) -> 0.99
             else -> throw IllegalArgumentException("Incorrect argument: $it")
@@ -92,5 +96,13 @@ class RainSprinklerWetGrassTest {
 
         assertEquals(0.2, network.probability(rain.toValueSet(True)))
         assertEquals(0.8, network.probability(rain.toValueSet(False)))
+
+        assertEquals(0.00198, network.probability(setOf(grass.withValue(True), sprinkler.withValue(True), rain.withValue(True))))
+        assertEquals(0.1584, network.probability(setOf(grass.withValue(True), sprinkler.withValue(False), rain.withValue(True))))
+        assertEquals(0.288, network.probability(setOf(grass.withValue(True), sprinkler.withValue(True), rain.withValue(False))))
+        assertEquals(0.0, network.probability(setOf(grass.withValue(True), sprinkler.withValue(False), rain.withValue(False))))
+
+        // P(Rain=true|Grass=true)
+        assertEquals(0.357, network.probability(rain.toValueSet(True), grass.toValueSet(True)))
     }
 }
