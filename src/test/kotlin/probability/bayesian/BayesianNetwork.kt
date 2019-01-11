@@ -8,6 +8,8 @@ class BayesianNetwork(vararg val nodes: Node) {
 
     // TBD: override equals() and hashcode()
     data class Event(val name: String, val values: Array<out Value>) {
+        fun withValue(value: Value): EventWithValue = EventWithValue(this, value)
+        fun toValueSet(value: Value): Set<EventWithValue> = withValue(value).toSet()
         override fun toString() = name
     }
 
@@ -15,8 +17,23 @@ class BayesianNetwork(vararg val nodes: Node) {
         override fun toString() = "$name=$value"
     }
 
-    class Node(val event: Event, vararg val parents: Node, val f: (Set<EventWithValue>) -> Double)
+    class Node(val event: Event, vararg val parents: Node, val probability: (Set<EventWithValue>) -> Double) {
+        operator fun get(e: Set<EventWithValue>): Double = probability(e)
 
+        fun events(): Set<Event> = (parents.map { it.event } + event).toSet()
+    }
+
+
+    private fun netProbability(eventsWithValues: Set<EventWithValue>): Double {
+
+        return nodes.map {
+            val events = it.events()
+            val eventsWithValuesSubset = eventsWithValues
+                    .filter { events.contains(it.name) }
+                    .toSet()
+            it[eventsWithValuesSubset]
+        }.reduce { acc, p -> acc * p }
+    }
 
     fun probability(events: Set<EventWithValue>, conditions: Set<EventWithValue> = setOf()): Double {
         return calcProbability(events + conditions) / calcProbability(conditions)
@@ -28,9 +45,7 @@ class BayesianNetwork(vararg val nodes: Node) {
             return 1.0
         }
 
-        val allEventsWithValues = addMissedValues(eventsWithValues)
-
-        return 1.0
+        return addMissedValues(eventsWithValues).map { netProbability(it) }.sum()
     }
 
     private fun <T> print(msg: String, eventsWithValues: Set<T>) {
@@ -73,3 +88,5 @@ class BayesianNetwork(vararg val nodes: Node) {
     }
 
 }
+
+fun BayesianNetwork.EventWithValue.toSet(): Set<BayesianNetwork.EventWithValue> = setOf(this)

@@ -49,15 +49,15 @@ class RainSprinklerWetGrassTest {
 
     val grassNode = Node(GrassIsWet, rainNode, sprinklerNode) {
         when (it) {
-            listOf("F", "F", "F") -> 1.0
-            listOf("F", "F", "T") -> 0.0
-            listOf("F", "T", "F") -> 0.2
-            listOf("F", "T", "T") -> 0.8
+            listOf("False", "False", "False") -> 1.0
+            listOf("False", "False", "True") -> 0.0
+            listOf("False", "True", "False") -> 0.2
+            listOf("False", "True", "True") -> 0.8
 
-            listOf("T", "F", "F") -> 0.1
-            listOf("T", "F", "T") -> 0.9
-            listOf("T", "T", "F") -> 0.01
-            listOf("T", "T", "T") -> 0.99
+            listOf("True", "False", "False") -> 0.1
+            listOf("True", "False", "True") -> 0.9
+            listOf("True", "True", "False") -> 0.01
+            listOf("True", "True", "True") -> 0.99
 
             else -> throw IllegalArgumentException("Incorrect argument: $it")
         }
