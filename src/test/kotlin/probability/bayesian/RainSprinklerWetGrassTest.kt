@@ -103,6 +103,9 @@ class RainSprinklerWetGrassTest {
         assertEquals(0.0, network.probability(setOf(grass.withValue(True), sprinkler.withValue(False), rain.withValue(False))))
 
         // P(Rain=true|Grass=true)
+        assertEquals(0.928, network.probability(rain.toValueSet(False), grass.toValueSet(False)))
+        assertEquals(0.071, network.probability(rain.toValueSet(True), grass.toValueSet(False)))
+        assertEquals(0.642, network.probability(rain.toValueSet(False), grass.toValueSet(True)))
         assertEquals(0.357, network.probability(rain.toValueSet(True), grass.toValueSet(True)))
     }
 }
