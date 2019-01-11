@@ -3,62 +3,49 @@ package probability.bayesian
 import org.junit.Test
 import probability.bayesian.BayesianNetwork.*
 import kotlin.test.assertEquals
+import util.assertEquals
+
+import probability.bayesian.RainSprinklerWetGrassTest.TruthValue.*
 
 class RainSprinklerWetGrassTest {
 
-
     enum class TruthValue(override val value: String) : Value {
-        T("true"),
-        F("false")
+        False("false"),
+        True("true")
     }
 
-    val Rain = Event("rain", TruthValue.values())
-    val Sprinkler = Event("sprinkler", TruthValue.values())
-    val GrassIsWet = Event("grass-is-wet", TruthValue.values())
+    val rain = Event("rain", TruthValue.values())
+    val sprinkler = Event("sprinkler", TruthValue.values())
+    val grass = Event("grass-is-wet", TruthValue.values())
 
-    val rainNode = Node(Rain) {
+    val rainNode = Node(rain) {
         when (it) {
-            setOf(EventWithValue(Rain, TruthValue.F)) -> 0.8
-            setOf(EventWithValue(Rain, TruthValue.T)) -> 0.2
+            setOf(rain.withValue(False)) -> 0.8
+            setOf(rain.withValue(True)) -> 0.2
             else -> throw IllegalArgumentException("Incorrect argument: $it")
         }
     }
 
-    val sprinklerNode = Node(Sprinkler, rainNode) {
+    val sprinklerNode = Node(sprinkler, rainNode) {
         when (it) {
-            setOf(
-                    EventWithValue(Rain, TruthValue.F),
-                    EventWithValue(Sprinkler, TruthValue.F)
-            ) -> 0.6
-            setOf(
-                    EventWithValue(Rain, TruthValue.F),
-                    EventWithValue(Sprinkler, TruthValue.T)
-            ) -> 0.4
-            setOf(
-                    EventWithValue(Rain, TruthValue.T),
-                    EventWithValue(Sprinkler, TruthValue.F)
-            ) -> 0.09
-            setOf(
-                    EventWithValue(Rain, TruthValue.T),
-                    EventWithValue(Sprinkler, TruthValue.T)
-            ) -> 0.01
-
+            setOf(rain.withValue(False), sprinkler.withValue(False)) -> 0.6
+            setOf(rain.withValue(False), sprinkler.withValue(True)) -> 0.4
+            setOf(rain.withValue(True), sprinkler.withValue(False)) -> 0.99
+            setOf(rain.withValue(True), sprinkler.withValue(True)) -> 0.01
             else -> throw IllegalArgumentException("Incorrect argument: $it")
         }
     }
 
-    val grassNode = Node(GrassIsWet, rainNode, sprinklerNode) {
+    val grassNode = Node(grass, rainNode, sprinklerNode) {
         when (it) {
-            listOf("False", "False", "False") -> 1.0
-            listOf("False", "False", "True") -> 0.0
-            listOf("False", "True", "False") -> 0.2
-            listOf("False", "True", "True") -> 0.8
-
-            listOf("True", "False", "False") -> 0.1
-            listOf("True", "False", "True") -> 0.9
-            listOf("True", "True", "False") -> 0.01
-            listOf("True", "True", "True") -> 0.99
-
+            setOf(rain.withValue(False), sprinkler.withValue(False), grass.withValue(False)) -> 1.0
+            setOf(rain.withValue(False), sprinkler.withValue(False), grass.withValue(True)) -> 0.0
+            setOf(rain.withValue(False), sprinkler.withValue(True), grass.withValue(False)) -> 0.2
+            setOf(rain.withValue(False), sprinkler.withValue(True), grass.withValue(True)) -> 0.8
+            setOf(rain.withValue(True), sprinkler.withValue(False), grass.withValue(False)) -> 0.1
+            setOf(rain.withValue(True), sprinkler.withValue(False), grass.withValue(True)) -> 0.9
+            setOf(rain.withValue(True), sprinkler.withValue(True), grass.withValue(False)) -> 0.01
+            setOf(rain.withValue(True), sprinkler.withValue(True), grass.withValue(True)) -> 0.99
             else -> throw IllegalArgumentException("Incorrect argument: $it")
         }
     }
@@ -70,33 +57,40 @@ class RainSprinklerWetGrassTest {
 
         assertEquals(setOf(), network.eventsWithAllValues(setOf()))
         assertEquals(setOf(
-                setOf(EventWithValue(Rain, TruthValue.F)),
-                setOf(EventWithValue(Rain, TruthValue.T))
-        ), network.eventsWithAllValues(setOf(Rain)))
+                setOf(EventWithValue(rain, TruthValue.False)),
+                setOf(EventWithValue(rain, TruthValue.True))
+        ), network.eventsWithAllValues(setOf(rain)))
         assertEquals(setOf(
-                setOf(EventWithValue(Rain, TruthValue.F), EventWithValue(Sprinkler, TruthValue.F)),
-                setOf(EventWithValue(Rain, TruthValue.F), EventWithValue(Sprinkler, TruthValue.T)),
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F)),
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.T))
-        ), network.eventsWithAllValues(setOf(Rain, Sprinkler)))
+                setOf(EventWithValue(rain, TruthValue.False), EventWithValue(sprinkler, TruthValue.False)),
+                setOf(EventWithValue(rain, TruthValue.False), EventWithValue(sprinkler, TruthValue.True)),
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False)),
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.True))
+        ), network.eventsWithAllValues(setOf(rain, sprinkler)))
     }
 
     @Test
     fun testAddMissedValues() {
         assertEquals(setOf(), network.eventsWithAllValues(setOf()))
         assertEquals(setOf(
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F), EventWithValue(GrassIsWet, TruthValue.T))
-        ), network.addMissedValues(setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F), EventWithValue(GrassIsWet, TruthValue.T))))
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False), EventWithValue(grass, TruthValue.True))
+        ), network.addMissedValues(setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False), EventWithValue(grass, TruthValue.True))))
         assertEquals(setOf(
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F), EventWithValue(GrassIsWet, TruthValue.F)),
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F), EventWithValue(GrassIsWet, TruthValue.T))
-        ), network.addMissedValues(setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F))))
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False), EventWithValue(grass, TruthValue.False)),
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False), EventWithValue(grass, TruthValue.True))
+        ), network.addMissedValues(setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False))))
 
         assertEquals(setOf(
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F), EventWithValue(GrassIsWet, TruthValue.F)),
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.F), EventWithValue(GrassIsWet, TruthValue.T)),
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.T), EventWithValue(GrassIsWet, TruthValue.F)),
-                setOf(EventWithValue(Rain, TruthValue.T), EventWithValue(Sprinkler, TruthValue.T), EventWithValue(GrassIsWet, TruthValue.T))
-        ), network.addMissedValues(setOf(EventWithValue(Rain, TruthValue.T))))
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False), EventWithValue(grass, TruthValue.False)),
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.False), EventWithValue(grass, TruthValue.True)),
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.True), EventWithValue(grass, TruthValue.False)),
+                setOf(EventWithValue(rain, TruthValue.True), EventWithValue(sprinkler, TruthValue.True), EventWithValue(grass, TruthValue.True))
+        ), network.addMissedValues(setOf(EventWithValue(rain, TruthValue.True))))
+    }
+
+    @Test
+    fun testProbabilities() {
+
+        assertEquals(0.2, network.probability(rain.toValueSet(True)))
+        assertEquals(0.8, network.probability(rain.toValueSet(False)))
     }
 }

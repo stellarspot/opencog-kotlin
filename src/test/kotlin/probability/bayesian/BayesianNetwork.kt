@@ -23,9 +23,7 @@ class BayesianNetwork(vararg val nodes: Node) {
         fun events(): Set<Event> = (parents.map { it.event } + event).toSet()
     }
 
-
     private fun netProbability(eventsWithValues: Set<EventWithValue>): Double {
-
         return nodes.map {
             val events = it.events()
             val eventsWithValuesSubset = eventsWithValues

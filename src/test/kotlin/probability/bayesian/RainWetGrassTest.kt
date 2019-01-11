@@ -1,12 +1,12 @@
 package probability.bayesian
 
-import org.junit.Assert
 import org.junit.Test
 import probability.bayesian.BayesianNetwork.*
 import probability.bayesian.RainWetGrassTest.GrassValue.Dry
 import probability.bayesian.RainWetGrassTest.GrassValue.Wet
 import probability.bayesian.RainWetGrassTest.TruthValue.False
 import probability.bayesian.RainWetGrassTest.TruthValue.True
+import util.assertEquals
 
 class RainWetGrassTest {
 
@@ -42,10 +42,6 @@ class RainWetGrassTest {
     }
 
     val network = BayesianNetwork(rainNode, grassNode)
-
-    fun assertEquals(expected: Double, actual: Double, delta: Double = 1e-2) {
-        Assert.assertEquals(expected, actual, delta)
-    }
 
     @Test
     fun testProbabilities() {
